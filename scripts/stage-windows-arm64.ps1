@@ -86,7 +86,7 @@ New-Item -ItemType Directory -Force -Path $temp, $bin, $libmpv | Out-Null
 $assets = @(
     @{ Name = 'mpv'; Url = 'https://github.com/shinchiro/mpv-winbuild-cmake/releases/download/20260610/mpv-aarch64-20260610-git-304426c.7z'; Sha = '0781fdffeef27a40a7f266631d1ca9e5c1d0f82868a1678c58d23e0b1bd1eb98' },
     @{ Name = 'mpv-dev'; Url = 'https://github.com/shinchiro/mpv-winbuild-cmake/releases/download/20260610/mpv-dev-aarch64-20260610-git-304426c.7z'; Sha = 'd9dd60db1c7b24db2e19d041f70abf0a4995f3e9eadf80a34e54f72300df6ed4' },
-    @{ Name = 'ffmpeg'; Url = 'https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-09-28-13-06/ffmpeg-n8.1.3-6-gff48edd8b2-winarm64-gpl-8.1.zip'; Sha = '7f545f5b4a77a9a4d1f44c86840aea073bd06ccd89dff341e447868d488ea487'
+    @{ Name = 'ffmpeg'; Url = 'https://github.com/System233/ffmpeg-msvc-prebuilt/releases/download/ffmpeg-8.1.3/ffmpeg-8.1.3_arm64-windows-static-gpl.zip'; Sha = '449c69cb4436d969f2cc3e2d2d96c0436436085011d3a6366b65cd8a4411cbec'
     }
 )
 

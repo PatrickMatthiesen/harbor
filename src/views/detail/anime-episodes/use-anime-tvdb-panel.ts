@@ -22,12 +22,14 @@ import {
 import { foreignAnimeProviderSeasons } from "@/lib/streams/anime-identity";
 import { resolveAnimeSlotMatch } from "./anime-slot-match";
 import type { PickerItem } from "../series-episodes/season-arc-picker";
+import type { AnimeDownloadEpisode } from "@/lib/download/anime-series";
 
 export type AnimeTvdbPanel = {
   items: PickerItem[];
   activeKey: string;
   onSelect: (key: string) => void;
   visibleEpisodes: KitsuEpisode[];
+  downloadEpisodes: AnimeDownloadEpisode[];
   orderTypes: TvdbSeasonTypeOption[];
   activeType: TvdbOrderType;
 };
@@ -209,6 +211,7 @@ export function useAnimeTvdbPanel(
     }
     const items: PickerItem[] = [];
     const subset = new Map<string, KitsuEpisode[]>();
+    const downloadEpisodes: AnimeDownloadEpisode[] = [];
     const claimed = new Set<number>();
     const claimedExtras = new Set<string>();
     const imdbMap = imdbId ? harborImdbEpisodesCached(imdbId) : undefined;
@@ -326,6 +329,8 @@ export function useAnimeTvdbPanel(
         seenId.add(ep.id);
         if (match) claimed.add(match.id);
         eps.push(ep);
+        if (s.seasonNumber > 0)
+          downloadEpisodes.push({ episode: ep, season: s.seasonNumber, number: e.episodeNumber });
       }
       const key = String(s.seasonNumber);
       const { from, to } = seasonDateRange(bucket);
@@ -350,7 +355,7 @@ export function useAnimeTvdbPanel(
       subset.set("specials", leftovers);
     }
     if (items.length === 0) return null;
-    return { items, subset, pool };
+    return { items, subset, pool, downloadEpisodes };
   }, [ordering, episodes, franchiseEpisodes, extrasLabel, franchise, foreignSeasons, imdbId]);
 
   useEffect(() => {
@@ -374,6 +379,7 @@ export function useAnimeTvdbPanel(
       activeKey,
       onSelect,
       visibleEpisodes: built.subset.get(activeKey) ?? built.pool,
+      downloadEpisodes: built.downloadEpisodes,
       orderTypes,
       activeType,
     },

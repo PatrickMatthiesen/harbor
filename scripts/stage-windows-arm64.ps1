@@ -136,9 +136,15 @@ Write-Host "Generated $definition from $($names.Count) ARM64 DLL exports."
 & $libTool "/def:$definition" "/out:$(Join-Path $libmpv 'mpv.lib')" /machine:ARM64
 if ($LASTEXITCODE -ne 0) { throw 'Failed to generate the ARM64 libmpv import library.' }
 
+$failedTools = @()
 foreach ($name in @('mpv', 'ffmpeg', 'ffprobe', 'yt-dlp')) {
     $exe = Join-Path $bin "$name-x86_64-pc-windows-msvc.exe"
     $versionFlag = if ($name -in @('ffmpeg', 'ffprobe')) { '-version' } else { '--version' }
     & $exe $versionFlag | Out-Host
-    if ($LASTEXITCODE -ne 0) { throw "$name $versionFlag failed on ARM64." }
+    if ($LASTEXITCODE -ne 0) {
+        $failure = "$name $versionFlag failed on ARM64 with exit code $LASTEXITCODE."
+        Write-Warning $failure
+        $failedTools += $failure
+    }
 }
+if ($failedTools.Count) { throw ($failedTools -join ' ') }

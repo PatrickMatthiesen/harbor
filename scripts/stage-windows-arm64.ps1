@@ -86,12 +86,13 @@ New-Item -ItemType Directory -Force -Path $temp, $bin, $libmpv | Out-Null
 $assets = @(
     @{ Name = 'mpv'; Url = 'https://github.com/shinchiro/mpv-winbuild-cmake/releases/download/20260610/mpv-aarch64-20260610-git-304426c.7z'; Sha = '0781fdffeef27a40a7f266631d1ca9e5c1d0f82868a1678c58d23e0b1bd1eb98' },
     @{ Name = 'mpv-dev'; Url = 'https://github.com/shinchiro/mpv-winbuild-cmake/releases/download/20260610/mpv-dev-aarch64-20260610-git-304426c.7z'; Sha = 'd9dd60db1c7b24db2e19d041f70abf0a4995f3e9eadf80a34e54f72300df6ed4' },
-    @{ Name = 'ffmpeg'; Url = 'https://github.com/shinchiro/mpv-winbuild-cmake/releases/download/20260610/ffmpeg-aarch64-git-2576e0943.7z'; Sha = '80ad97a134f486d46e4e140de7e65d6ac6c5c744c89ae8df23496132f1d771e1'
+    @{ Name = 'ffmpeg'; Url = 'https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-09-28-13-06/ffmpeg-n8.1.3-6-gff48edd8b2-winarm64-gpl-8.1.zip'; Sha = '7f545f5b4a77a9a4d1f44c86840aea073bd06ccd89dff341e447868d488ea487'
     }
 )
 
 foreach ($asset in $assets) {
-    $archive = Join-Path $temp "$($asset.Name).7z"
+    $extension = [System.IO.Path]::GetExtension(([uri]$asset.Url).AbsolutePath)
+    $archive = Join-Path $temp "$($asset.Name)$extension"
     $out = Join-Path $temp $asset.Name
     Get-VerifiedAsset $asset.Url $asset.Sha $archive
     New-Item -ItemType Directory -Force -Path $out | Out-Null

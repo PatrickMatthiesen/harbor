@@ -1,0 +1,80 @@
+name: Windows ARM64 beta installer
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - beta-branch
+    paths:
+      - .github/workflows/windows-arm64-beta.yml
+      - scripts/stage-windows-arm64.ps1
+
+permissions:
+  contents: read
+
+env:
+  NODE_OPTIONS: --max-old-space-size=6144
+  # The extension compat layer is outside this repository, as in tauri-build.yml.
+  HARBOR_CAPSTAN_OPTIONAL: "1"
+
+jobs:
+  installer:
+    runs-on: windows-11-arm
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-pc-windows-msvc
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            src-tauri
+            installer/src-tauri
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Stage native ARM64 binaries
+        shell: pwsh
+        run: ./scripts/stage-windows-arm64.ps1
+      - name: Stage fonts
+        run: pnpm run setup:fonts
+      - name: Build native Harbor app
+        run: pnpm tauri build --target aarch64-pc-windows-msvc --no-bundle --ci
+      - name: Build managed ARM64 installer
+        shell: pwsh
+        env:
+          CARGO_BUILD_JOBS: 2
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Write-Warning 'This beta installer ships without extension support because the compat layer is outside this repository.'
+          New-Item -ItemType Directory -Force -Path 'src-tauri/target/release' | Out-Null
+          Copy-Item -LiteralPath 'src-tauri/target/aarch64-pc-windows-msvc/release/harbor.exe' -Destination 'src-tauri/target/release/harbor.exe' -Force
+          cargo build --manifest-path installer/src-tauri/Cargo.toml --release --no-default-features --features tauri/custom-protocol --bin harbor-uninstall --locked
+          if ($LASTEXITCODE -ne 0) { throw 'ARM64 uninstaller build failed' }
+          node installer/scripts/make-payload.mjs
+          if ($LASTEXITCODE -ne 0) { throw 'ARM64 payload creation failed' }
+          node scripts/verify-managed-payload.mjs
+          if ($LASTEXITCODE -ne 0) { throw 'ARM64 payload verification failed' }
+          cargo build --manifest-path installer/src-tauri/Cargo.toml --release --features tauri/custom-protocol --bin harbor-setup --locked
+          if ($LASTEXITCODE -ne 0) { throw 'ARM64 managed installer build failed' }
+          node scripts/verify-managed-payload.mjs --embedded
+          if ($LASTEXITCODE -ne 0) { throw 'ARM64 embedded payload verification failed' }
+          ./scripts/stage-windows-arm64.ps1 -VerifyBuild
+          $version = (Get-Content 'src-tauri/tauri.conf.json' -Raw | ConvertFrom-Json).version
+          $installer = "Harbor_${version}_beta-arm64-installer.exe"
+          Copy-Item -LiteralPath 'installer/src-tauri/target/release/harbor-setup.exe' -Destination $installer
+          Get-FileHash -LiteralPath $installer -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLowerInvariant())  $installer" } | Set-Content -LiteralPath "$installer.sha256" -Encoding ascii
+      - name: Upload ARM64 beta installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: harbor-windows-arm64-beta
+          path: |
+            Harbor_*_beta-arm64-installer.exe
+            Harbor_*_beta-arm64-installer.exe.sha256
+          if-no-files-found: error
+          retention-days: 14

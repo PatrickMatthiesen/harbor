@@ -1248,6 +1248,8 @@ export function useKeyboardNavigation(options: TVNavigationOptions = {}) {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.defaultPrevented) return;
       if (e.altKey || e.ctrlKey || e.metaKey) return;
+      if (isBackKey(e) && document.querySelector("[data-dropdown-menu]")) return;
+      if (e.key === "Escape" && document.querySelector("[data-harbor-modal-escape]")) return;
 
       // Tab is native keyboard navigation, but does not call moveFocus().
       // Restore keyboard modality so its focus cues are not hidden after mouse use.

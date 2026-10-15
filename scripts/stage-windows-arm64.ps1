@@ -84,8 +84,8 @@ $temp = Join-Path $env:RUNNER_TEMP 'harbor-windows-arm64-assets'
 New-Item -ItemType Directory -Force -Path $temp, $bin, $libmpv | Out-Null
 
 $assets = @(
-    @{ Name = 'mpv'; Url = 'https://github.com/shinchiro/mpv-winbuild-cmake/releases/download/20260610/mpv-aarch64-20260610-git-304426c.7z'; Sha = '0781fdffeef27a40a7f266631d1ca9e5c1d0f82868a1678c58d23e0b1bd1eb98' },
-    @{ Name = 'mpv-dev'; Url = 'https://github.com/shinchiro/mpv-winbuild-cmake/releases/download/20260610/mpv-dev-aarch64-20260610-git-304426c.7z'; Sha = 'd9dd60db1c7b24db2e19d041f70abf0a4995f3e9eadf80a34e54f72300df6ed4' },
+    @{ Name = 'mpv'; Url = 'https://github.com/shinchiro/mpv-winbuild-cmake/releases/download/20261010/mpv-aarch64-20261010-git-b2c255c13e.7z'; Sha = 'c3aabf7bcc2c7b1350b46571e992437d53164a7f11ff54010d8715a913c80f2f' },
+    @{ Name = 'mpv-dev'; Url = 'https://github.com/shinchiro/mpv-winbuild-cmake/releases/download/20261010/mpv-dev-aarch64-20261010-git-b2c255c13e.7z'; Sha = '79f01f523cba1c958b7b1bfc85746dc8d11fee821fc032769742995c914e36be' },
     @{ Name = 'ffmpeg'; Url = 'https://github.com/System233/ffmpeg-msvc-prebuilt/releases/download/ffmpeg-8.1.3/ffmpeg-8.1.3_arm64-windows-static-gpl.zip'; Sha = '449c69cb4436d969f2cc3e2d2d96c0436436085011d3a6366b65cd8a4411cbec'
     }
 )

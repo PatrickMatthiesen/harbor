@@ -797,6 +797,7 @@ export function PlayPicker({
   const noResults =
     addonsSettled && !!streamIds && streamIds.length > 0 && allCount === 0 && debrids.length > 0;
   const terminalEmpty = noStreamIds || noDebrids || noResults;
+  const seasonPackEmpty = isSeasonDownload && addonsSettled && allCount === 0;
   const [perEpisodeBusy, setPerEpisodeBusy] = useState(false);
   const [perEpisodeStatus, setPerEpisodeStatus] = useState<PerEpisodeStatus | null>(null);
   const perEpisodeAcRef = useRef<AbortController | null>(null);
@@ -1099,10 +1100,6 @@ export function PlayPicker({
             season={episode?.season ?? null}
             rawCount={rawCount}
             refreshing={loading}
-            episodeCount={seasonEpisodes?.length ?? 0}
-            queueing={perEpisodeBusy}
-            queueStatus={perEpisodeStatus}
-            onQueueEpisodes={() => void startPerEpisodeSeason()}
             onRefresh={refresh}
             onOpenSettings={() => openSettings("streaming")}
           />
@@ -1405,5 +1402,66 @@ function PickerScrollTop({
         </button>
       </div>
     </>
+  );
+}
+
+function SeasonPackEmptyState({
+  season,
+  rawCount,
+  refreshing,
+  onRefresh,
+  onOpenSettings,
+}: {
+  season: number | null;
+  rawCount: number;
+  refreshing: boolean;
+  onRefresh: () => void;
+  onOpenSettings: () => void;
+}) {
+  const t = useT();
+  const seasonLabel = season == null ? t("this season") : t("Season {n}", { n: season });
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="rounded-3xl border border-edge-soft/70 bg-canvas/80 px-9 py-8"
+    >
+      <div className="flex flex-col items-center gap-4 text-center">
+        <div className="flex max-w-lg flex-col gap-2">
+          <h2 className="font-display text-2xl leading-tight text-ink">
+            {t("No season package found")}
+          </h2>
+          <p className="text-[13.5px] leading-relaxed text-ink-muted">
+            {rawCount > 0
+              ? t(
+                  "Harbor found episode sources for {season}, but none is a single downloadable package. Use the episode review below to choose sources and download them one at a time.",
+                  { season: seasonLabel },
+                )
+              : t(
+                  "None of your addons returned a downloadable package for {season}. Use the episode review below to check individual episodes, or refresh the sources.",
+                  { season: seasonLabel },
+                )}
+          </p>
+        </div>
+        <div className="flex flex-wrap justify-center gap-2.5">
+          <button
+            type="button"
+            onClick={onRefresh}
+            disabled={refreshing}
+            className="inline-flex h-10 items-center gap-2 rounded-full border border-edge-soft bg-elevated px-5 text-[13px] font-semibold text-ink-muted transition-colors hover:border-edge hover:text-ink disabled:cursor-not-allowed disabled:opacity-55"
+          >
+            <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} aria-hidden />
+            {t("Refresh sources")}
+          </button>
+          <button
+            type="button"
+            onClick={onOpenSettings}
+            className="h-10 rounded-full border border-edge-soft bg-elevated px-5 text-[13px] font-semibold text-ink-muted transition-colors hover:border-edge hover:text-ink"
+          >
+            {t("Source settings")}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -6,7 +6,6 @@ import type { Meta } from "@/lib/cinemeta";
 import { EpisodeWatchedMenu, type WatchedMenuTarget } from "@/components/episode-watched-menu";
 import {
   manualEpisodeKeys,
-  manualWatchedState,
   manualWatchedVersion,
   subscribeManualWatched,
 } from "@/lib/manual-watched";
@@ -30,8 +29,6 @@ import {
   type CinemetaVideo,
 } from "./episode-groups";
 
-type Translator = (key: string, vars?: Record<string, string | number>) => string;
-
 import { EpisodeDownloadsMenu } from "./episode-downloads-menu";
 import type { DownloadEpisode } from "@/lib/download/episode-range";
 import type { PlayEpisode } from "@/lib/view";
@@ -39,6 +36,8 @@ import { useTrakt } from "@/lib/trakt/provider";
 import { useSimkl } from "@/lib/simkl/provider";
 import { useWatchedSets } from "./series-episodes/use-watched-sets";
 
+
+type Translator = (key: string, vars?: Record<string, string | number>) => string;
 
 function numberedEpisode(ep: CinemetaVideo): { season: number; episode: number } | null {
   const season = ep.season;
@@ -181,16 +180,15 @@ export function CinemetaEpisodes({
   }, [meta.id, seasonStats, combinedWatched, resumeSeason]);
 
 
-  const watchedAt = (season: number, number: number): boolean => {
-    const st = manualWatchedState(meta.id, season, number);
-    return st === true || (st === undefined && (stremioWatched?.has(`${season}:${number}`) ?? false));
-  };
+  const progressAt = (season: number, number: number, runtimeMin: number | null): Progress =>
+    getEpisodeProgress(meta.id, season, number, runtimeMin, traktKey, traktWatched,
+      stremioWatched, undefined, simklWatched);
 
-  const progressFor = (g: GridEpisode): Progress => ({
-    ratio: 0,
-    watched: watchedAt(g.season, g.number),
-    startedAt: 0,
-  });
+  const watchedAt = (season: number, number: number): boolean =>
+    progressAt(season, number, runtime).watched;
+
+  const progressFor = (g: GridEpisode): Progress =>
+    progressAt(g.season, g.number, g.runtime ?? runtime);
 
   // The grid and the strip read the same model; only the list walks the raw videos, because it
   // shows a description the card layouts would clip away.
@@ -425,7 +423,7 @@ export function CinemetaEpisodeRow({
               formatAired(aired),
             ]
               .filter(Boolean)
-              .join("  ·  ")}
+              .join("  Â·  ")}
           </p>
           {(ep.overview ?? ep.description) && (
             <p className="line-clamp-2 text-[13.5px] leading-relaxed text-ink-muted">

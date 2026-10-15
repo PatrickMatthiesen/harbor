@@ -753,7 +753,12 @@ function focusElement(el: HTMLElement, scroll: "center" | "nearest" | "none" = "
     document.getElementById("root")?.setAttribute("data-card-focus-active", "");
   }
 
-  if (navEnabled && inputModality !== "pointer" && isSearchLikeField(el) && activeSearchEditEl !== el) {
+  if (
+    navEnabled &&
+    inputModality !== "pointer" &&
+    isSearchLikeField(el) &&
+    activeSearchEditEl !== el
+  ) {
     // Navigation focus is not editing mode.
     el.removeAttribute("data-search-editing");
     setSearchNavMode(el);

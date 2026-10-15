@@ -36,7 +36,6 @@ import { useTrakt } from "@/lib/trakt/provider";
 import { useSimkl } from "@/lib/simkl/provider";
 import { useWatchedSets } from "./series-episodes/use-watched-sets";
 
-
 type Translator = (key: string, vars?: Record<string, string | number>) => string;
 
 function numberedEpisode(ep: CinemetaVideo): { season: number; episode: number } | null {
@@ -179,10 +178,18 @@ export function CinemetaEpisodes({
     setActive(resumeDefaultSeason(meta.id, seasonStats, combinedWatched, resumeSeason));
   }, [meta.id, seasonStats, combinedWatched, resumeSeason]);
 
-
   const progressAt = (season: number, number: number, runtimeMin: number | null): Progress =>
-    getEpisodeProgress(meta.id, season, number, runtimeMin, traktKey, traktWatched,
-      stremioWatched, undefined, simklWatched);
+    getEpisodeProgress(
+      meta.id,
+      season,
+      number,
+      runtimeMin,
+      traktKey,
+      traktWatched,
+      stremioWatched,
+      undefined,
+      simklWatched,
+    );
 
   const watchedAt = (season: number, number: number): boolean =>
     progressAt(season, number, runtime).watched;
@@ -230,14 +237,7 @@ export function CinemetaEpisodes({
             }),
         };
       }),
-    [
-      activeEps,
-      meta,
-      t,
-      playLocalAware,
-      settings.instantPlay,
-      settings.seasonSourceLock,
-    ],
+    [activeEps, meta, t, playLocalAware, settings.instantPlay, settings.seasonSourceLock],
   );
 
   if (grouped.length === 0) return null;
